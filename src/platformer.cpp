@@ -114,7 +114,7 @@ public:
 
             Mix_CloseAudio();
 
-            SDL_Quit();
+            // SDL_Quit();
             // if (SDL_LoadWAV(MUS_PATH, &wav_spec, &wav_buffer, &wav_length) == NULL)
             // {
             //     fprintf(stderr, "Could not open jump.wav: %s\n", SDL_GetError());
@@ -173,9 +173,9 @@ public:
 
         if (is_jumping)
         {
+            playJumpSound();
             if (playerDistFromGround <= jumpHight)
             {
-                playJumpSound();
                 move(0, -1);
                 playerDistFromGround++;
                 int sp_pos = 35;
