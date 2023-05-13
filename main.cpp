@@ -1,7 +1,10 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 #include "src/platformer.h"
+
+#ifdef WIN32
 #include <windows.h>
+#endif 
 
 #define WINDOW_WIDTH 800
 #define WINDOW_HIGHT 600

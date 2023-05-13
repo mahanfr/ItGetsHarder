@@ -1,11 +1,13 @@
+#ifdef linux
+#include <bits/types/struct_timespec.h>
+#endif
 
-// #include <bits/types/struct_timespec.h>
 #ifdef WIN32
 #include <windows.h>
 #elif _POSIX_C_SOURCE >= 199309L
-#include <time.h> // for nanosleep
+#include <time.h>
 #else
-#include <unistd.h> // for usleep
+#include <unistd.h>
 #endif
 
 void sleep_ms(int milliseconds)
