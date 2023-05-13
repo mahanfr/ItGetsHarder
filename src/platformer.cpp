@@ -30,7 +30,7 @@ private:
 
 public:
     int speed = 4;
-    int x = 100;
+    int x = 100; // make it private someday
     int y = 200;
     bool is_player_moving = false;
     bool is_grounded = false;
@@ -47,6 +47,14 @@ public:
     SDL_Rect hitbox()
     {
         return SDL_Rect{x, y + 1, 52, 64};
+    }
+    SDL_Rect feet_hitbox()
+    {
+        return SDL_Rect{x + 5, y + 52, 25, 12};
+    }
+    SDL_Rect head_hitbox()
+    {
+        return SDL_Rect{x + 5, y, 25, 12};
     }
 
     void move(int x, int y)
@@ -184,21 +192,41 @@ void platformer(SDL_Renderer *renderer)
         // Render Block
         SDL_SetRenderDrawColor(renderer, 168, 230, 255, 255);
         SDL_RenderClear(renderer);
+
         SDL_SetRenderDrawColor(renderer, 86, 125, 70, 255);
         SDL_Rect ground{0, 300, 200, 50};
         SDL_RenderFillRect(renderer, &ground);
+
+        SDL_SetRenderDrawColor(renderer, 255, 125, 70, 255);
+        SDL_Rect ground1{50, 150, 200, 50};
+        SDL_RenderFillRect(renderer, &ground1);
+
         SDL_SetRenderDrawColor(renderer, 86, 125, 70, 255);
         SDL_Rect ground2{260, 360, 180, 50};
         SDL_RenderFillRect(renderer, &ground2);
+
         SDL_SetRenderDrawColor(renderer, 86, 125, 70, 255);
         SDL_Rect ground3{500, 420, 400, 50};
         SDL_RenderFillRect(renderer, &ground3);
+
+        SDL_Rect feetHitbos = player.feet_hitbox();
+        SDL_SetRenderDrawColor(renderer, 86, 125, 70, 255);
+        SDL_RenderFillRect(renderer, &feetHitbos);
+
+        SDL_Rect headHitbox = player.head_hitbox();
+        SDL_SetRenderDrawColor(renderer, 255, 125, 70, 255);
+        SDL_RenderFillRect(renderer, &headHitbox);
+
         player.render(renderer, ticks);
         SDL_RenderPresent(renderer);
 
         // Collision Block
-        // SDL_Rect playerHitBox = {player.x,player.y,56,64};
-        SDL_Rect playerHitBox = player.hitbox();
+        SDL_Rect playerHitBox = player.feet_hitbox();
+        ground.h /= 10; // this whole things have to change... the colliders don't actually restrict player's movements
+        ground1.h /= 10;
+        ground2.h /= 10;
+        ground3.h /= 10;
+
         if (SDL_HasIntersection(&ground, &playerHitBox))
         {
             player.is_grounded = true;
@@ -211,11 +239,15 @@ void platformer(SDL_Renderer *renderer)
         {
             player.is_grounded = true;
         }
+        else if (SDL_HasIntersection(&ground1, &playerHitBox))
+        {
+            player.is_grounded = true;
+        }
         else
         {
             player.is_grounded = false;
         }
-        sleep_ms(30);
+        sleep_ms(20);
     }
 
     player.destroy();
