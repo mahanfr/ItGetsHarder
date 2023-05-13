@@ -1,15 +1,4 @@
 #include <SDL2/SDL.h>
-// wtf is all this?
-
-// #include <SDL2/SDL_events.h>
-// #include <SDL2/SDL_keyboard.h>
-// #include <SDL2/SDL_keycode.h>
-// #include <SDL2/SDL_pixels.h>
-// #include <SDL2/SDL_render.h>
-// #include <SDL2/SDL_scancode.h>
-// #include <SDL2/SDL_surface.h>
-// #include <SDL2/SDL_timer.h>
-// #include <SDL2/SDL_video.h>
 #include <SDL2/SDL_image.h>
 #include <SDL2/SDL_mixer.h>
 #include <cstdlib>
@@ -19,7 +8,14 @@
 #include <vector>
 #include "utils.h"
 #include "platformer.h"
+
+#ifdef _WIN32
 #define MUS_PATH ".././assets/jump.wav"
+#define SPRITE_PATH ".././assets/Old-hero.png";
+#else
+#define MUS_PATH "./assets/jump.wav"
+#define SPRITE_PATH "./assets/Old-hero.png";
+#endif
 #define WINDOW_WIDTH 800
 #define WINDOW_HIGHT 600
 
@@ -39,18 +35,13 @@ public:
     bool is_player_moving = false;
     bool is_grounded = false;
     int playerDir = +1;
-    // The music that will be played
-    Mix_Music *music = NULL;
+    Mix_Chunk *jumpingSound; 
 
-    // The sound effects that will be used
-    Mix_Chunk *scratch = NULL;
-    Mix_Chunk *high = NULL;
-    Mix_Chunk *med = NULL;
-    Mix_Chunk *low = NULL;
     Player(SDL_Renderer *renderer, char *sprite)
     {
         image = IMG_Load(sprite);
         texture = SDL_CreateTextureFromSurface(renderer, image);
+        jumpingSound = Mix_LoadWAV(MUS_PATH);
     }
 
     SDL_Rect hitbox()
@@ -76,78 +67,15 @@ public:
     {
         SDL_DestroyTexture(texture);
         SDL_FreeSurface(image);
+        Mix_FreeChunk(jumpingSound);
+        Mix_CloseAudio();
     }
 
     void playJumpSound()
     {
-        SDL_AudioSpec wav_spec;
-        Uint32 wav_length;
-        Uint8 *wav_buffer;
-        SDL_AudioSpec wavSpec;
-        /* Load the WAV */
-        try
-        {
-
-            if (SDL_Init(SDL_INIT_AUDIO) < 0)
-            {
-                printf("SDL could not initialize! SDL_Error: %s\n", SDL_GetError());
-            }
-            if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048) < 0)
-            {
-                printf("SDL_mixer could not initialize! SDL_mixer Error: %s\n", Mix_GetError());
-            }
-
-            Mix_Chunk *sound = Mix_LoadWAV(MUS_PATH);
-            if (sound == NULL)
-            {
-                printf("Failed to load sound file! SDL_mixer Error: %s\n", Mix_GetError());
-            }
-
-            Mix_PlayChannel(-1, sound, 0);
-
-            while (Mix_Playing(-1) != 0)
-            {
-                SDL_Delay(100);
-            }
-
-            Mix_FreeChunk(sound);
-
-            Mix_CloseAudio();
-
-            SDL_Quit();
-            // if (SDL_LoadWAV(MUS_PATH, &wav_spec, &wav_buffer, &wav_length) == NULL)
-            // {
-            //     fprintf(stderr, "Could not open jump.wav: %s\n", SDL_GetError());
-            // }
-
-            // if (wavSpec.format != AUDIO_S16LSB)
-            // {
-            //     printf("Error: Unsupported audio format\n");
-            //     SDL_FreeWAV(wav_buffer);
-            // }
-            // SDL_AudioDeviceID deviceId = SDL_OpenAudioDevice(NULL, 0, &wavSpec, NULL, 0);
-            // if (deviceId == 0)
-            // {
-            //     printf("Error: %s\n", SDL_GetError());
-            // }
-
-            // SDL_QueueAudio(deviceId, wav_buffer, wav_length);
-            // SDL_PauseAudioDevice(deviceId, 0);
-
-            // SDL_Delay(5000);
-
-            // SDL_CloseAudioDevice(deviceId);
-            // SDL_FreeWAV(wav_buffer);
-            // SDL_Quit();
-
-            // /* Free It */
-            // SDL_FreeWAV(wav_buffer);
-        }
-        catch (const std::exception &e)
-        {
-            printf("Error: %s\n", e);
-        }
+        Mix_PlayChannel(-1, jumpingSound, 0);
     }
+
     void render(SDL_Renderer *renderer, Uint32 ticks)
     {
         const Uint8 *keystates = SDL_GetKeyboardState(NULL);
@@ -173,9 +101,11 @@ public:
 
         if (is_jumping)
         {
+            if(playerDistFromGround == 1) {
+                playJumpSound();
+            }
             if (playerDistFromGround <= jumpHight)
             {
-                playJumpSound();
                 move(0, -1);
                 playerDistFromGround++;
                 int sp_pos = 35;
@@ -228,10 +158,13 @@ public:
 
 void platformer(SDL_Renderer *renderer)
 {
-
+    if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048) < 0)
+    {
+        printf("SDL_mixer could not initialize! SDL_mixer Error: %s\n", Mix_GetError());
+    }
     bool running = true;
 
-    char sprite[] = ".././assets/Old-hero.png";
+    char sprite[] = SPRITE_PATH;
     Player player(renderer, sprite);
     while (running)
     {
