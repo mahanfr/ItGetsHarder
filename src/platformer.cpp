@@ -116,7 +116,7 @@ public:
             // trying to restrict player
             if (!playerAndRectangleCollisioinDetector(left_hitbox(), rectangle)) //&& x > this->x
 
-                this->x += x * speed * 1.5; // x int e bad * 1.5 mikonim?
+                this->x += x * speed * 1.5; // x k int e bad * 1.5 mikonim?
 
             if (!playerAndRectangleCollisioinDetector(right_hitbox(), rectangle)) //&& x < this->x
 
