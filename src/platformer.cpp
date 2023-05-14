@@ -8,7 +8,9 @@
 #include <vector>
 #include "utils.h"
 #include "platformer.h"
+
 using namespace std;
+
 #ifdef _WIN32
 #define MUS_PATH ".././assets/jump.wav"
 #define SPRITE_PATH ".././assets/Old-hero.png";
@@ -18,6 +20,8 @@ using namespace std;
 #endif
 #define WINDOW_WIDTH 800
 #define WINDOW_HIGHT 600
+#define DEFAULT_COLOR {86, 125, 70, 255}
+
 typedef struct Color
 {
     int r, g, b, a;
@@ -29,7 +33,7 @@ SDL_Rect obsticle_array[4] = {{0, 300, 200, 50}, {260, 360, 180, 50}, {500, 420,
 class Obsticles
 {
 public:
-    Obsticles(SDL_Renderer *renderer, Color color = {r : 86, g : 125, b : 70, a : 255})
+    Obsticles(SDL_Renderer *renderer, Color color = DEFAULT_COLOR)
     {
         SDL_SetRenderDrawColor(renderer, 168, 230, 255, 255);
         SDL_RenderClear(renderer);
@@ -39,20 +43,16 @@ public:
             SDL_RenderFillRect(renderer, &rectangle);
         }
     }
-    void rectangleDrawer(SDL_Renderer *renderer, SDL_Rect shape, Color color = {r : 86, g : 125, b : 70, a : 255})
+    void rectangleDrawer(SDL_Renderer *renderer, SDL_Rect shape, Color color = DEFAULT_COLOR)
     {
         SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, color.a);
         SDL_RenderFillRect(renderer, &shape);
     }
 };
+
 bool playerAndRectangleCollisioinDetector(SDL_Rect hitbox, SDL_Rect rectangle)
 {
-    if (SDL_HasIntersection(&hitbox, &rectangle))
-    {
-        cout << "false";
-        return true;
-    }
-    return false;
+    return (SDL_HasIntersection(&hitbox, &rectangle));
 }
 
 class Player
@@ -104,36 +104,29 @@ public:
     void move(int x, int y)
     {
         if (x < 0)
-        {
             playerDir = -1;
-        }
         else if (x > 0)
-        {
             playerDir = +1;
-        }
+
+        this->x += x * speed;
+        this->y += y * speed;
+    }
+
+    void move_if_no_collide(int x,int y) {
+        
         for (SDL_Rect rectangle : obsticle_array)
         {
             // trying to restrict player
-            if (!playerAndRectangleCollisioinDetector(left_hitbox(), rectangle)) //&& x > this->x
-
-                this->x += x * speed * 1.5; // x k int e bad * 1.5 mikonim?
-
-            if (!playerAndRectangleCollisioinDetector(right_hitbox(), rectangle)) //&& x < this->x
-
-                this->x += x * speed * 1.5;
-
-            // if (!playerAndRectangleCollisioinDetector(head_hitbox(), rectangle)) // && y > this->y
-
-            //     this->y += y * speed * 1.5;
-            if (this->y < 500)
-                if (!playerAndRectangleCollisioinDetector(feet_hitbox(), rectangle))
-
-                {
-                    this->y += y * speed * 1.5;
-
-                    cout << this->y << " + " << y << "\n";
-                }
+            if (playerAndRectangleCollisioinDetector(left_hitbox(), rectangle) && x < 0)
+                return;
+            if (playerAndRectangleCollisioinDetector(right_hitbox(), rectangle) && x > 0) //&& x < this->x
+                return;
+            if (playerAndRectangleCollisioinDetector(feet_hitbox(), rectangle) && y > 0)
+                return;
+            if (this->y > 500)
+                return;
         }
+        move(x,y);
     }
 
     void destroy()
@@ -155,12 +148,12 @@ public:
         if (keystates[SDL_SCANCODE_LEFT] || keystates[SDL_SCANCODE_A])
         {
             is_player_moving = true;
-            move(-1, 0);
+            move_if_no_collide(-1,0);
         }
         else if (keystates[SDL_SCANCODE_RIGHT] || keystates[SDL_SCANCODE_D])
         {
             is_player_moving = true;
-            move(1, 0);
+            move_if_no_collide(1,0);
         }
         else
         {
@@ -180,7 +173,7 @@ public:
             }
             if (playerDistFromGround <= jumpHight)
             {
-                move(0, -1);
+                move_if_no_collide(0,-1);
                 playerDistFromGround++;
                 int sp_pos = 35;
                 SDL_Rect srcrect = {sp_pos, 48, 14, 16};
@@ -202,7 +195,7 @@ public:
             }
             else
             {
-                move(0, 1);
+                move_if_no_collide(0,1);
                 int sp_pos = true ? 17 : 35;
                 SDL_Rect srcrect = {sp_pos, 48, 14, 16};
                 SDL_Rect dstrect = {x, y, 56, 64};
