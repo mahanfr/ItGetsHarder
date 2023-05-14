@@ -8,7 +8,7 @@
 #include <vector>
 #include "utils.h"
 #include "platformer.h"
-
+using namespace std;
 #ifdef _WIN32
 #define MUS_PATH ".././assets/jump.wav"
 #define SPRITE_PATH ".././assets/Old-hero.png";
@@ -18,6 +18,42 @@
 #endif
 #define WINDOW_WIDTH 800
 #define WINDOW_HIGHT 600
+typedef struct Color
+{
+    int r, g, b, a;
+} Color;
+
+// all Obsticles in one place
+SDL_Rect obsticle_array[4] = {{0, 300, 200, 50}, {260, 360, 180, 50}, {500, 420, 400, 50}, {200, 500, 400, 50}};
+
+class Obsticles
+{
+public:
+    Obsticles(SDL_Renderer *renderer, Color color = {r : 86, g : 125, b : 70, a : 255})
+    {
+        SDL_SetRenderDrawColor(renderer, 168, 230, 255, 255);
+        SDL_RenderClear(renderer);
+        for (SDL_Rect rectangle : obsticle_array)
+        {
+            SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, color.a);
+            SDL_RenderFillRect(renderer, &rectangle);
+        }
+    }
+    void rectangleDrawer(SDL_Renderer *renderer, SDL_Rect shape, Color color = {r : 86, g : 125, b : 70, a : 255})
+    {
+        SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, color.a);
+        SDL_RenderFillRect(renderer, &shape);
+    }
+};
+bool playerAndRectangleCollisioinDetector(SDL_Rect hitbox, SDL_Rect rectangle)
+{
+    if (SDL_HasIntersection(&hitbox, &rectangle))
+    {
+        cout << "false";
+        return true;
+    }
+    return false;
+}
 
 class Player
 {
@@ -27,11 +63,11 @@ private:
     int jumpHight = 15;
     int playerDistFromGround = 0;
     bool is_jumping = false;
+    int x = 100;
+    int y = 200;
+    int speed = 4;
 
 public:
-    int speed = 4;
-    int x = 100; // make it private someday
-    int y = 200;
     bool is_player_moving = false;
     bool is_grounded = false;
     int playerDir = +1;
@@ -56,6 +92,14 @@ public:
     {
         return SDL_Rect{x + 5, y, 25, 12};
     }
+    SDL_Rect left_hitbox()
+    {
+        return SDL_Rect{x, y + 5, 12, 50};
+    }
+    SDL_Rect right_hitbox()
+    {
+        return SDL_Rect{x + 30, y + 5, 12, 50};
+    }
 
     void move(int x, int y)
     {
@@ -67,8 +111,29 @@ public:
         {
             playerDir = +1;
         }
-        this->x += x * speed * 1.5;
-        this->y += y * speed * 1.5;
+        for (SDL_Rect rectangle : obsticle_array)
+        {
+            // trying to restrict player
+            if (!playerAndRectangleCollisioinDetector(left_hitbox(), rectangle)) //&& x > this->x
+
+                this->x += x * speed * 1.5; // x int e bad * 1.5 mikonim?
+
+            if (!playerAndRectangleCollisioinDetector(right_hitbox(), rectangle)) //&& x < this->x
+
+                this->x += x * speed * 1.5;
+
+            // if (!playerAndRectangleCollisioinDetector(head_hitbox(), rectangle)) // && y > this->y
+
+            //     this->y += y * speed * 1.5;
+            if (this->y < 500)
+                if (!playerAndRectangleCollisioinDetector(feet_hitbox(), rectangle))
+
+                {
+                    this->y += y * speed * 1.5;
+
+                    cout << this->y << " + " << y << "\n";
+                }
+        }
     }
 
     void destroy()
@@ -87,12 +152,12 @@ public:
     void render(SDL_Renderer *renderer, Uint32 ticks)
     {
         const Uint8 *keystates = SDL_GetKeyboardState(NULL);
-        if (keystates[SDL_SCANCODE_LEFT])
+        if (keystates[SDL_SCANCODE_LEFT] || keystates[SDL_SCANCODE_A])
         {
             is_player_moving = true;
             move(-1, 0);
         }
-        else if (keystates[SDL_SCANCODE_RIGHT])
+        else if (keystates[SDL_SCANCODE_RIGHT] || keystates[SDL_SCANCODE_D])
         {
             is_player_moving = true;
             move(1, 0);
@@ -102,7 +167,7 @@ public:
             is_player_moving = false;
         }
 
-        if (keystates[SDL_SCANCODE_UP] && !is_jumping && is_grounded)
+        if ((keystates[SDL_SCANCODE_UP] || keystates[SDL_SCANCODE_W] || keystates[SDL_SCANCODE_SPACE]) && !is_jumping && is_grounded)
         {
             is_jumping = true;
         }
@@ -167,6 +232,7 @@ public:
 
 void platformer(SDL_Renderer *renderer)
 {
+    // TODO add try catch for all sound stuff
     if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048) < 0)
     {
         printf("SDL_mixer could not initialize! SDL_mixer Error: %s\n", Mix_GetError());
@@ -190,64 +256,17 @@ void platformer(SDL_Renderer *renderer)
         }
 
         // Render Block
-        SDL_SetRenderDrawColor(renderer, 168, 230, 255, 255);
-        SDL_RenderClear(renderer);
+        Obsticles Obsticles(renderer);
 
-        SDL_SetRenderDrawColor(renderer, 86, 125, 70, 255);
-        SDL_Rect ground{0, 300, 200, 50};
-        SDL_RenderFillRect(renderer, &ground);
-
-        SDL_SetRenderDrawColor(renderer, 255, 125, 70, 255);
-        SDL_Rect ground1{50, 150, 200, 50};
-        SDL_RenderFillRect(renderer, &ground1);
-
-        SDL_SetRenderDrawColor(renderer, 86, 125, 70, 255);
-        SDL_Rect ground2{260, 360, 180, 50};
-        SDL_RenderFillRect(renderer, &ground2);
-
-        SDL_SetRenderDrawColor(renderer, 86, 125, 70, 255);
-        SDL_Rect ground3{500, 420, 400, 50};
-        SDL_RenderFillRect(renderer, &ground3);
-
-        SDL_Rect feetHitbos = player.feet_hitbox();
-        SDL_SetRenderDrawColor(renderer, 86, 125, 70, 255);
-        SDL_RenderFillRect(renderer, &feetHitbos);
-
-        SDL_Rect headHitbox = player.head_hitbox();
-        SDL_SetRenderDrawColor(renderer, 255, 125, 70, 255);
-        SDL_RenderFillRect(renderer, &headHitbox);
+        Obsticles.rectangleDrawer(renderer, player.left_hitbox());
+        Obsticles.rectangleDrawer(renderer, player.right_hitbox(), {0, 0, 255, 255});
+        Obsticles.rectangleDrawer(renderer, player.feet_hitbox(), {255, 0, 0, 255});
+        Obsticles.rectangleDrawer(renderer, player.head_hitbox(), {255, 0, 255, 255});
 
         player.render(renderer, ticks);
         SDL_RenderPresent(renderer);
 
-        // Collision Block
-        SDL_Rect playerHitBox = player.feet_hitbox();
-        ground.h /= 10; // this whole things have to change... the colliders don't actually restrict player's movements
-        ground1.h /= 10;
-        ground2.h /= 10;
-        ground3.h /= 10;
-
-        if (SDL_HasIntersection(&ground, &playerHitBox))
-        {
-            player.is_grounded = true;
-        }
-        else if (SDL_HasIntersection(&ground2, &playerHitBox))
-        {
-            player.is_grounded = true;
-        }
-        else if (SDL_HasIntersection(&ground3, &playerHitBox))
-        {
-            player.is_grounded = true;
-        }
-        else if (SDL_HasIntersection(&ground1, &playerHitBox))
-        {
-            player.is_grounded = true;
-        }
-        else
-        {
-            player.is_grounded = false;
-        }
-        sleep_ms(20);
+        sleep_ms(40);
     }
 
     player.destroy();
