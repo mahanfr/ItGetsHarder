@@ -69,7 +69,9 @@ private:
 
 public:
     bool is_player_moving = false;
-    bool is_grounded = false;
+    // Changed it to dynamicly check for ground collition
+    // might need to revert for optimization
+    // bool is_grounded = false;
     int playerDir = +1;
     Mix_Chunk *jumpingSound;
 
@@ -108,8 +110,8 @@ public:
         else if (x > 0)
             playerDir = +1;
 
-        this->x += x * speed;
-        this->y += y * speed;
+        this->x += x * speed * 1.5;
+        this->y += y * speed * 1.5;
     }
 
     void move_if_no_collide(int x,int y) {
@@ -127,6 +129,15 @@ public:
                 return;
         }
         move(x,y);
+    }
+
+    bool is_grounded_dyn() {
+        auto result = false;
+        for (SDL_Rect rectangle : obsticle_array){
+            if(playerAndRectangleCollisioinDetector(feet_hitbox(), rectangle))
+                return true;
+        }
+        return result;
     }
 
     void destroy()
@@ -156,11 +167,9 @@ public:
             move_if_no_collide(1,0);
         }
         else
-        {
             is_player_moving = false;
-        }
 
-        if ((keystates[SDL_SCANCODE_UP] || keystates[SDL_SCANCODE_W] || keystates[SDL_SCANCODE_SPACE]) && !is_jumping && is_grounded)
+        if ((keystates[SDL_SCANCODE_UP] || keystates[SDL_SCANCODE_W] || keystates[SDL_SCANCODE_SPACE]) && !is_jumping && is_grounded_dyn())
         {
             is_jumping = true;
         }
@@ -168,9 +177,8 @@ public:
         if (is_jumping)
         {
             if (playerDistFromGround == 1)
-            {
                 playJumpSound();
-            }
+
             if (playerDistFromGround <= jumpHight)
             {
                 move_if_no_collide(0,-1);
@@ -182,13 +190,11 @@ public:
                 return;
             }
             else
-            {
                 is_jumping = false;
-            }
         }
         else
         {
-            if (is_grounded)
+            if (is_grounded_dyn())
             {
                 playerDistFromGround = 0;
                 is_jumping = false;
