@@ -29,7 +29,7 @@ typedef struct Color
 } Color;
 
 // all Obsticles in one place
-SDL_Rect obsticle_array[4] = {{0, 300, 200, 50}, {260, 380, 180, 50}, {500, 420, 400, 50}, {200, 500, 400, 50}};
+SDL_Rect obsticle_array[5] = {{0, 300, 200, 50}, {260, 380, 180, 50}, {500, 420, 400, 50}, {200, 500, 400, 50}, {200, 230, 400, 50}};
 
 class Obsticles
 {
@@ -125,10 +125,8 @@ public:
                 return;
             if (playerAndRectangleCollisioinDetector(head_hitbox(), rectangle) && y < 0)
             {
-                // TODO fix it so that position of where it hit also moves the player so one day we could have moving onsticles or pistons or something
-                speed = 0;
-                cout << "the phantom exterior like fish eggs interior like suicide wrist-red. I could exercise you, this could be your phys-ed. Cheat on your man homie AAGH I tried to sneak through the door man! Can't make it. Can't make it. Shit's stuck. Outta my way son! DOOR STUCK! DOOR STUCK! PLEASE! I BEG YOU! We're dead. You're a genuine dick sucker";
-                move(x, 0);
+                move(x,-y);
+                is_jumping = false;
                 return;
             }
             if (playerAndRectangleCollisioinDetector(right_hitbox(), rectangle) && x > 0)
@@ -285,11 +283,11 @@ void platformer(SDL_Renderer *renderer)
 
         // Move camera if player hit the outline of window
         SDL_Rect f = player.feet_hitbox();
-        f.x += 20; // why not work?
+        f.x -= 20; // why not work?
         f.y = 0;
         f.h = 800;
         f.w = 600;
-        SDL_RenderSetViewport(renderer, &f);
+        //SDL_RenderSetViewport(renderer, &f);
         sleep_ms(20);
     }
 
