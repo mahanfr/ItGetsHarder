@@ -18,9 +18,10 @@ using namespace std;
 #define MUS_PATH "./assets/jump.wav"
 #define SPRITE_PATH "./assets/Old-hero.png";
 #endif
-#define WINDOW_WIDTH 800
-#define WINDOW_HIGHT 600
-#define DEFAULT_COLOR {86, 125, 70, 255}
+#define DEFAULT_COLOR    \
+    {                    \
+        86, 125, 70, 255 \
+    }
 
 typedef struct Color
 {
@@ -28,7 +29,7 @@ typedef struct Color
 } Color;
 
 // all Obsticles in one place
-SDL_Rect obsticle_array[4] = {{0, 300, 200, 50}, {260, 360, 180, 50}, {500, 420, 400, 50}, {200, 500, 400, 50}};
+SDL_Rect obsticle_array[4] = {{0, 300, 200, 50}, {260, 380, 180, 50}, {500, 420, 400, 50}, {200, 500, 400, 50}};
 
 class Obsticles
 {
@@ -114,27 +115,43 @@ public:
         this->y += y * speed * 1.5;
     }
 
-    void move_if_no_collide(int x,int y) {
-        
+    void move_if_no_collide(int x, int y)
+    {
+
         for (SDL_Rect rectangle : obsticle_array)
         {
             // trying to restrict player
             if (playerAndRectangleCollisioinDetector(left_hitbox(), rectangle) && x < 0)
                 return;
-            if (playerAndRectangleCollisioinDetector(right_hitbox(), rectangle) && x > 0) //&& x < this->x
+            if (playerAndRectangleCollisioinDetector(head_hitbox(), rectangle) && y < 0)
+            {
+                // TODO fix it so that position of where it hit also moves the player so one day we could have moving onsticles or pistons or something
+                speed = 0;
+                cout << "the phantom exterior like fish eggs interior like suicide wrist-red. I could exercise you, this could be your phys-ed. Cheat on your man homie AAGH I tried to sneak through the door man! Can't make it. Can't make it. Shit's stuck. Outta my way son! DOOR STUCK! DOOR STUCK! PLEASE! I BEG YOU! We're dead. You're a genuine dick sucker";
+                move(x, 0);
+                return;
+            }
+            if (playerAndRectangleCollisioinDetector(right_hitbox(), rectangle) && x > 0)
                 return;
             if (playerAndRectangleCollisioinDetector(feet_hitbox(), rectangle) && y > 0)
                 return;
             if (this->y > 500)
+            {
+                this->x = 100;
+                this->y = 200;
+
                 return;
+            }
         }
-        move(x,y);
+        move(x, y);
     }
 
-    bool is_grounded_dyn() {
+    bool is_grounded_dyn()
+    {
         auto result = false;
-        for (SDL_Rect rectangle : obsticle_array){
-            if(playerAndRectangleCollisioinDetector(feet_hitbox(), rectangle))
+        for (SDL_Rect rectangle : obsticle_array)
+        {
+            if (playerAndRectangleCollisioinDetector(feet_hitbox(), rectangle))
                 return true;
         }
         return result;
@@ -159,12 +176,12 @@ public:
         if (keystates[SDL_SCANCODE_LEFT] || keystates[SDL_SCANCODE_A])
         {
             is_player_moving = true;
-            move_if_no_collide(-1,0);
+            move_if_no_collide(-1, 0);
         }
         else if (keystates[SDL_SCANCODE_RIGHT] || keystates[SDL_SCANCODE_D])
         {
             is_player_moving = true;
-            move_if_no_collide(1,0);
+            move_if_no_collide(1, 0);
         }
         else
             is_player_moving = false;
@@ -181,7 +198,7 @@ public:
 
             if (playerDistFromGround <= jumpHight)
             {
-                move_if_no_collide(0,-1);
+                move_if_no_collide(0, -1);
                 playerDistFromGround++;
                 int sp_pos = 35;
                 SDL_Rect srcrect = {sp_pos, 48, 14, 16};
@@ -201,7 +218,7 @@ public:
             }
             else
             {
-                move_if_no_collide(0,1);
+                move_if_no_collide(0, 1);
                 int sp_pos = true ? 17 : 35;
                 SDL_Rect srcrect = {sp_pos, 48, 14, 16};
                 SDL_Rect dstrect = {x, y, 56, 64};
@@ -257,15 +274,23 @@ void platformer(SDL_Renderer *renderer)
         // Render Block
         Obsticles Obsticles(renderer);
 
-        Obsticles.rectangleDrawer(renderer, player.left_hitbox());
-        Obsticles.rectangleDrawer(renderer, player.right_hitbox(), {0, 0, 255, 255});
-        Obsticles.rectangleDrawer(renderer, player.feet_hitbox(), {255, 0, 0, 255});
-        Obsticles.rectangleDrawer(renderer, player.head_hitbox(), {255, 0, 255, 255});
+        // rendered player hitboxex
+        //  Obsticles.rectangleDrawer(renderer, player.left_hitbox());
+        //  Obsticles.rectangleDrawer(renderer, player.right_hitbox(), {0, 0, 255, 255});
+        //  Obsticles.rectangleDrawer(renderer, player.feet_hitbox(), {255, 0, 0, 255});
+        //  Obsticles.rectangleDrawer(renderer, player.head_hitbox(), {255, 0, 255, 255});
 
         player.render(renderer, ticks);
         SDL_RenderPresent(renderer);
 
-        sleep_ms(40);
+        // Move camera if player hit the outline of window
+        SDL_Rect f = player.feet_hitbox();
+        f.x += 20; // why not work?
+        f.y = 0;
+        f.h = 800;
+        f.w = 600;
+        SDL_RenderSetViewport(renderer, &f);
+        sleep_ms(20);
     }
 
     player.destroy();
