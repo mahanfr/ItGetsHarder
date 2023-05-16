@@ -64,6 +64,10 @@ private:
     int jumpHight = 15;
     int playerDistFromGround = 0;
     bool is_jumping = false;
+    bool is_punching = false;
+    bool punching_cooldown = 0;
+    Uint32 punching_duration = 0;
+    int punch_afp = 0;
     int x = 100;
     int y = 200;
     int speed = 4;
@@ -189,6 +193,28 @@ public:
             is_jumping = true;
         }
 
+        if (keystates[SDL_SCANCODE_X] && !is_punching && !punching_cooldown) {
+            is_punching = true;
+            punching_duration = ticks;
+            punching_cooldown = true;
+        }else if (!keystates[SDL_SCANCODE_X]){
+            punching_cooldown = false;
+        }
+
+        if (is_punching)
+        {
+            if (ticks - punching_duration >= 200) 
+            {
+                is_punching = false;
+                punching_duration = 0;
+            }
+            int sp_pos = 34;
+            SDL_Rect srcrect = {sp_pos, 81, 14, 16};
+            SDL_Rect dstrect = {x, y, 56, 64};
+            SDL_RenderCopyEx(renderer, texture, &srcrect, &dstrect, 0, NULL, (playerDir > 0 ? SDL_FLIP_NONE : SDL_FLIP_HORIZONTAL));
+            return;
+        }
+
         if (is_jumping)
         {
             if (playerDistFromGround == 1)
@@ -198,7 +224,7 @@ public:
             {
                 move_if_no_collide(0, -1);
                 playerDistFromGround++;
-                int sp_pos = 35;
+                int sp_pos = 17;
                 SDL_Rect srcrect = {sp_pos, 48, 14, 16};
                 SDL_Rect dstrect = {x, y, 56, 64};
                 SDL_RenderCopyEx(renderer, texture, &srcrect, &dstrect, 0, NULL, (playerDir > 0 ? SDL_FLIP_NONE : SDL_FLIP_HORIZONTAL));
@@ -217,7 +243,7 @@ public:
             else
             {
                 move_if_no_collide(0, 1);
-                int sp_pos = true ? 17 : 35;
+                int sp_pos = 35;
                 SDL_Rect srcrect = {sp_pos, 48, 14, 16};
                 SDL_Rect dstrect = {x, y, 56, 64};
                 SDL_RenderCopyEx(renderer, texture, &srcrect, &dstrect, 0, NULL, (playerDir > 0 ? SDL_FLIP_NONE : SDL_FLIP_HORIZONTAL));
