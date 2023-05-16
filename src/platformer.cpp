@@ -125,6 +125,7 @@ public:
                 return;
             if (playerAndRectangleCollisioinDetector(head_hitbox(), rectangle) && y < 0)
             {
+                // TODO fix it so that position of where it hit also moves the player so one day we could have moving onsticles or pistons or something
                 speed = 0;
                 cout << "the phantom exterior like fish eggs interior like suicide wrist-red. I could exercise you, this could be your phys-ed. Cheat on your man homie AAGH I tried to sneak through the door man! Can't make it. Can't make it. Shit's stuck. Outta my way son! DOOR STUCK! DOOR STUCK! PLEASE! I BEG YOU! We're dead. You're a genuine dick sucker";
                 move(x, 0);
