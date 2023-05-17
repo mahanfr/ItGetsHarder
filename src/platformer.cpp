@@ -125,7 +125,7 @@ public:
                 return;
             if (playerAndRectangleCollisioinDetector(head_hitbox(), rectangle) && y < 0)
             {
-                move(x,-y);
+                // move(x, -y);
                 is_jumping = false;
                 return;
             }
@@ -184,8 +184,9 @@ public:
         else
             is_player_moving = false;
 
-        if ((keystates[SDL_SCANCODE_UP] || keystates[SDL_SCANCODE_W] || keystates[SDL_SCANCODE_SPACE]) && !is_jumping && is_grounded_dyn())
+        if ((keystates[SDL_SCANCODE_UP] || keystates[SDL_SCANCODE_W] || keystates[SDL_SCANCODE_SPACE]) && !is_jumping && is_grounded_dyn() && ticks % 2 == 1) // prevents some of the wierd spam jump for now until we find better solusion
         {
+            // if (playerAndRectangleCollisioinDetector(feet_hitbox(), anyObsticle) ) this is probably a better solusion
             is_jumping = true;
         }
 
@@ -287,7 +288,7 @@ void platformer(SDL_Renderer *renderer)
         f.y = 0;
         f.h = 800;
         f.w = 600;
-        //SDL_RenderSetViewport(renderer, &f);
+        // SDL_RenderSetViewport(renderer, &f);
         sleep_ms(20);
     }
 

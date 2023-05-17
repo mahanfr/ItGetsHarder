@@ -1,4 +1,4 @@
 #!/bin/bash
 
 
-make && ./it_gets_harder
+make && ./Smash_Step_Bros
