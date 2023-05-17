@@ -13,7 +13,7 @@ using namespace std;
 
 #ifdef _WIN32
 #define MUS_PATH ".././assets/jump.wav"
-#define SPRITE_PATH ".././assets/Old-hero.png";
+#define SPRITE_PATH ".././assets/Old-hero-red.png";
 #else
 #define MUS_PATH "./assets/jump.wav"
 #define SPRITE_PATH "./assets/Old-hero.png";
@@ -129,7 +129,7 @@ public:
                 return;
             if (playerAndRectangleCollisioinDetector(head_hitbox(), rectangle) && y < 0)
             {
-                move(x,-y);
+                move(x, -y);
                 is_jumping = false;
                 return;
             }
@@ -193,17 +193,20 @@ public:
             is_jumping = true;
         }
 
-        if (keystates[SDL_SCANCODE_X] && !is_punching && !punching_cooldown) {
+        if (keystates[SDL_SCANCODE_X] && !is_punching && !punching_cooldown)
+        {
             is_punching = true;
             punching_duration = ticks;
             punching_cooldown = true;
-        }else if (!keystates[SDL_SCANCODE_X]){
+        }
+        else if (!keystates[SDL_SCANCODE_X])
+        {
             punching_cooldown = false;
         }
 
         if (is_punching)
         {
-            if (ticks - punching_duration >= 200) 
+            if (ticks - punching_duration >= 200)
             {
                 is_punching = false;
                 punching_duration = 0;
@@ -313,7 +316,7 @@ void platformer(SDL_Renderer *renderer)
         f.y = 0;
         f.h = 800;
         f.w = 600;
-        //SDL_RenderSetViewport(renderer, &f);
+        // SDL_RenderSetViewport(renderer, &f);
         sleep_ms(20);
     }
 
