@@ -13,7 +13,7 @@ int main(int argc, char *argv[])
 {
     SDL_Init(SDL_INIT_EVERYTHING);
     IMG_Init(IMG_INIT_PNG);
-    SDL_Window *window = SDL_CreateWindow("ItGetsHarder", 100, 100, WINDOW_WIDTH, WINDOW_HIGHT, SDL_WINDOW_SHOWN);
+    SDL_Window *window = SDL_CreateWindow("bruhlers", 100, 100, WINDOW_WIDTH, WINDOW_HIGHT, SDL_WINDOW_SHOWN);
     SDL_Renderer *renderer = SDL_CreateRenderer(window, -1, 0);
 
     platformer(renderer);
