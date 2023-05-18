@@ -2,6 +2,7 @@
 #include <SDL2/SDL_image.h>
 #include <SDL2/SDL_ttf.h>
 #include "src/platformer.h"
+#include "src/utils.h"
 
 #ifdef WIN32
 #include <windows.h>
@@ -18,7 +19,26 @@ int main(int argc, char *argv[])
     SDL_Window *window = SDL_CreateWindow("Brahlers", 100, 100, WINDOW_WIDTH, WINDOW_HIGHT, SDL_WINDOW_SHOWN);
     SDL_Renderer *renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
 
-    platformer(renderer);
+    TestLevelState testLevel = GetTestStateLevel(renderer);
+    
+    bool running = true;
+    while (running)
+    {
+        SDL_Event ev;
+        while (SDL_PollEvent(&ev))
+        {
+            if ((SDL_QUIT == ev.type) ||
+                (SDL_KEYDOWN == ev.type && SDL_SCANCODE_ESCAPE == ev.key.keysym.scancode))
+            {
+                running = false;
+                break;
+            }
+        }
+        
+        UpdateTestLevel(testLevel);
+        sleep_ms(20);
+    }
+    DestroyTestLevel(testLevel);
 
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);

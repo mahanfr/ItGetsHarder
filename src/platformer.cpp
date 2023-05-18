@@ -2,6 +2,7 @@
 #include <SDL2/SDL_image.h>
 #include <SDL2/SDL_ttf.h>
 #include <SDL2/SDL_mixer.h>
+#include <cstddef>
 #include <cstdlib>
 #include <math.h>
 #include <sstream>
@@ -11,7 +12,6 @@
 #include <vector>
 #include "utils.h"
 #include "platformer.h"
-
 using namespace std;
 
 #ifdef _WIN32
@@ -85,6 +85,8 @@ public:
     int playerDir = +1;
     Mix_Chunk *jumpingSound;
     float health = 100;
+
+    Player();
 
     Player(SDL_Renderer *renderer, char *sprite)
     {
@@ -187,8 +189,9 @@ public:
         Mix_PlayChannel(-1, jumpingSound, 0);
     }
 
-    void render(SDL_Renderer *renderer, Uint32 ticks)
+    void render(SDL_Renderer *renderer)
     {
+        Uint32 ticks = SDL_GetTicks();
         const Uint8 *keystates = SDL_GetKeyboardState(NULL);
         if (keystates[SDL_SCANCODE_LEFT] || keystates[SDL_SCANCODE_A])
         {
@@ -288,63 +291,23 @@ public:
     }
 };
 
-void platformer(SDL_Renderer *renderer)
-{
-    // TODO add try catch for all sound stuff
+TestLevelState GetTestStateLevel(SDL_Renderer* renderer) {
     if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048) < 0)
     {
         printf("SDL_mixer could not initialize! SDL_mixer Error: %s\n", Mix_GetError());
     }
-    bool running = true;
-
     char sprite[] = SPRITE_PATH;
+    Player* player = new Player(renderer ,sprite);
+    TestLevelState state{renderer, player};
+    return state;
+}
 
-    TTF_Font *font = TTF_OpenFont(FONT_PATH,24);
-    SDL_Color text_color{0, 0, 0};
-    SDL_Rect Message_rect {10,5,80,20}; //create a rect
-    SDL_Surface* surfaceMessage;
-    SDL_Texture* message; 
-    Player player(renderer, sprite);
-    while (running)
-    {
-        Uint32 ticks = SDL_GetTicks();
-        SDL_Event ev;
-        while (SDL_PollEvent(&ev))
-        {
-            if ((SDL_QUIT == ev.type) ||
-                (SDL_KEYDOWN == ev.type && SDL_SCANCODE_ESCAPE == ev.key.keysym.scancode))
-            {
-                running = false;
-                break;
-            }
-        }
+void UpdateTestLevel(TestLevelState state) {
+   Obsticles Obsticles(state.renderer);
+   state.player->render(state.renderer);
+   SDL_RenderPresent(state.renderer);
+}
 
-
-        // Render Block
-        Obsticles Obsticles(renderer);
-
-        // rendered player hitboxex
-        //  Obsticles.rectangleDrawer(renderer, player.left_hitbox());
-        //  Obsticles.rectangleDrawer(renderer, player.right_hitbox(), {0, 0, 255, 255});
-        //  Obsticles.rectangleDrawer(renderer, player.feet_hitbox(), {255, 0, 0, 255});
-        //  Obsticles.rectangleDrawer(renderer, player.head_hitbox(), {255, 0, 255, 255});
-
-        player.render(renderer, ticks);
-
-        // Move camera if player hit the outline of window
-        //SDL_Rect f = player.feet_hitbox();
-        // f.x -= 20; // why not work?
-        // f.y = 0;
-        // f.h = 800;
-        // f.w = 600;
-        // SDL_RenderSetViewport(renderer, &f);
-        surfaceMessage = TTF_RenderText_Solid(font, player.get_player_health_display().c_str(), text_color);
-        message = SDL_CreateTextureFromSurface(renderer, surfaceMessage);
-        SDL_RenderCopy(renderer, message, NULL, &Message_rect);
-        SDL_RenderPresent(renderer);
-        sleep_ms(20);
-    }
-    SDL_FreeSurface(surfaceMessage);
-    SDL_DestroyTexture(message);
-    player.destroy();
+void DestroyTestLevel(TestLevelState state) {
+    state.player->destroy();
 }
