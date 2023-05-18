@@ -9,15 +9,16 @@
 #include <windows.h>
 #endif
 
-#define WINDOW_WIDTH 800
-#define WINDOW_HIGHT 600
+#define WINDOW_FACTOR 70
+#define WINDOW_WIDTH 16 * WINDOW_FACTOR
+#define WINDOW_HIGHT 9 * WINDOW_FACTOR
 
 int main(int argc, char *argv[])
 {
     SDL_Init(SDL_INIT_EVERYTHING);
     IMG_Init(IMG_INIT_PNG);
     TTF_Init();
-    SDL_Window *window = SDL_CreateWindow("Brahlers", 100, 100, WINDOW_WIDTH, WINDOW_HIGHT, SDL_WINDOW_SHOWN);
+    SDL_Window *window = SDL_CreateWindow("Brahlers", 30, 30, WINDOW_WIDTH, WINDOW_HIGHT, SDL_WINDOW_SHOWN);
     SDL_Renderer *renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
 
     auto testLevel = GetTestStateLevel(renderer);
@@ -53,7 +54,7 @@ int main(int argc, char *argv[])
             default: UpdateTestLevel(testLevel); break;
         }
         
-       SDL_RenderPresent(renderer);
+        SDL_RenderPresent(renderer);
         sleep_ms(20);
     }
     DestroyTestLevel(testLevel);

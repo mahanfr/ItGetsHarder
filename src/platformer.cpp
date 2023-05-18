@@ -305,7 +305,6 @@ TestLevelState GetTestStateLevel(SDL_Renderer* renderer) {
 void UpdateTestLevel(TestLevelState state) {
    Obsticles Obsticles(state.renderer);
    state.player->render(state.renderer);
-   SDL_RenderPresent(state.renderer);
 }
 
 void DestroyTestLevel(TestLevelState state) {
