@@ -1,13 +1,10 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
-#include <SDL2/SDL_ttf.h>
 #include <SDL2/SDL_mixer.h>
 #include <cstdlib>
 #include <math.h>
-#include <sstream>
 #include <stdio.h>
 #include <iostream>
-#include <string>
 #include <vector>
 #include "utils.h"
 #include "platformer.h"
@@ -17,11 +14,9 @@ using namespace std;
 #ifdef _WIN32
 #define MUS_PATH ".././assets/jump.wav"
 #define SPRITE_PATH ".././assets/Old-hero-red.png";
-#define FONT_PATH ".././assets/Oleaguid.ttf"
 #else
 #define MUS_PATH "./assets/jump.wav"
-#define SPRITE_PATH "./assets/Old-hero.png"
-#define FONT_PATH "./assets/Oleaguid.ttf"
+#define SPRITE_PATH "./assets/Old-hero.png";
 #endif
 #define DEFAULT_COLOR    \
     {                    \
@@ -84,22 +79,12 @@ public:
     // bool is_grounded = false;
     int playerDir = +1;
     Mix_Chunk *jumpingSound;
-    float health = 100;
 
     Player(SDL_Renderer *renderer, char *sprite)
     {
         image = IMG_Load(sprite);
         texture = SDL_CreateTextureFromSurface(renderer, image);
         jumpingSound = Mix_LoadWAV(MUS_PATH);
-    }
-    
-    string get_player_health_display()
-    {
-        stringstream text;
-        text.str("");
-        text << "Health: " << health;
-        auto res = text.str();
-        return res;
     }
 
     SDL_Rect hitbox()
@@ -299,12 +284,6 @@ void platformer(SDL_Renderer *renderer)
     bool running = true;
 
     char sprite[] = SPRITE_PATH;
-
-    TTF_Font *font = TTF_OpenFont(FONT_PATH,24);
-    SDL_Color text_color{0, 0, 0};
-    SDL_Rect Message_rect {10,5,80,20}; //create a rect
-    SDL_Surface* surfaceMessage;
-    SDL_Texture* message; 
     Player player(renderer, sprite);
     while (running)
     {
@@ -320,7 +299,6 @@ void platformer(SDL_Renderer *renderer)
             }
         }
 
-
         // Render Block
         Obsticles Obsticles(renderer);
 
@@ -331,21 +309,17 @@ void platformer(SDL_Renderer *renderer)
         //  Obsticles.rectangleDrawer(renderer, player.head_hitbox(), {255, 0, 255, 255});
 
         player.render(renderer, ticks);
+        SDL_RenderPresent(renderer);
 
         // Move camera if player hit the outline of window
-        //SDL_Rect f = player.feet_hitbox();
-        // f.x -= 20; // why not work?
-        // f.y = 0;
-        // f.h = 800;
-        // f.w = 600;
+        SDL_Rect f = player.feet_hitbox();
+        f.x -= 20; // why not work?
+        f.y = 0;
+        f.h = 800;
+        f.w = 600;
         // SDL_RenderSetViewport(renderer, &f);
-        surfaceMessage = TTF_RenderText_Solid(font, player.get_player_health_display().c_str(), text_color);
-        message = SDL_CreateTextureFromSurface(renderer, surfaceMessage);
-        SDL_RenderCopy(renderer, message, NULL, &Message_rect);
-        SDL_RenderPresent(renderer);
         sleep_ms(20);
     }
-    SDL_FreeSurface(surfaceMessage);
-    SDL_DestroyTexture(message);
+
     player.destroy();
 }
