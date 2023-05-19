@@ -1,8 +1,14 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
+#include <SDL2/SDL_render.h>
 #include <complex>
+#include <iostream>
+#include <memory>
+#include <vector>
 #include "levelOne.h"
 #include "utils.h"
+
+using namespace std;
 
 #ifdef _WIN32
 #define BACKGROUND_IMAGE_PATH ".././assets/level-one/background.png"
@@ -15,6 +21,39 @@
 #define CLOUD_ONE_IMAGE_PATH "./assets/level-one/cloud-one.png"
 #define CLOUD_TWO_IMAGE_PATH "./assets/level-one/cloud-two.png"
 #endif
+
+
+class Entity {
+public:
+    SDL_Point pos = {0,0};
+    SDL_Point size = {100,100};
+    bool is_static;
+   
+    SDL_Rect* getRect() {
+        SDL_Rect* rect; 
+        rect->x = pos.x;
+        rect->y = pos.y;
+        rect->w = size.x;
+        rect->h = size.y;
+        return rect;
+    }
+
+    virtual void start(SDL_Renderer * renderer) {}
+    virtual void update(SDL_Renderer * renderer) {}
+    virtual void update() {}
+    virtual void destroy() {}
+};
+
+
+class Platform : public Entity {
+public: 
+    Platform(){ }
+
+    void update(SDL_Renderer * renderer) override {
+        SDL_SetRenderDrawColor(renderer,0,0,0,255);
+        SDL_RenderFillRect(renderer, getRect());
+    }
+};
 
 class BackgroudLeyer{
 private:
@@ -67,13 +106,13 @@ public:
         }
         cloud1_x-=2;
         cloud2_x-=2;
-        if(cloud1_x < -300) {
+        if(cloud1_x < -cloud1->w) {
             cloud1_y = rand() % 200;
-            cloud1_x = WINDOW_WIDTH + rand() % WINDOW_WIDTH / 2;
+            cloud1_x = cloud1->w + WINDOW_WIDTH;
         }
-        if(cloud2_x < -300) {
+        if(cloud2_x < -cloud2->w) {
             cloud2_y = rand() % 200;
-            cloud2_x = WINDOW_WIDTH + rand() % WINDOW_WIDTH / 2;
+            cloud2_x = cloud2->w + WINDOW_WIDTH;
         }
     }
 
@@ -118,9 +157,11 @@ LevelOneState GetLevelOneState(SDL_Renderer* renderer) {
 }
 
 void UpdateLevelOne(LevelOneState state){
-    SDL_SetRenderDrawColor(state.renderer, 8, 166, 213, 255);
+    SDL_SetRenderDrawColor(state.renderer, 0, 0, 0, 255);
     SDL_RenderClear(state.renderer);
     state.background->render();
+    Entity* plat = new Platform();
+    plat->update(state.renderer);
 } 
 
 void DestroyLevelOne(LevelOneState state){

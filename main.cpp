@@ -9,9 +9,7 @@
 #include <windows.h>
 #endif
 
-#define WINDOW_FACTOR 70
-#define WINDOW_WIDTH 16 * WINDOW_FACTOR
-#define WINDOW_HIGHT 9 * WINDOW_FACTOR
+#define DEBUG true
 
 int main(int argc, char *argv[])
 {
