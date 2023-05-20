@@ -2,8 +2,10 @@
 #include <SDL2/SDL_image.h>
 #include <SDL2/SDL_render.h>
 #include <complex>
+#include <cstring>
 #include <iostream>
 #include <memory>
+#include <string>
 #include <vector>
 #include "levelOne.h"
 #include "utils.h"
@@ -22,23 +24,21 @@ using namespace std;
 #define CLOUD_TWO_IMAGE_PATH "./assets/level-one/cloud-two.png"
 #endif
 
+typedef struct Vec2 {
+    int x;
+    int y;
+} Vec2;
 
 class Entity {
 public:
-    SDL_Point pos = {0,0};
-    SDL_Point size = {100,100};
-    bool is_static;
-   
-    SDL_Rect* getRect() {
-        SDL_Rect* rect; 
-        rect->x = pos.x;
-        rect->y = pos.y;
-        rect->w = size.x;
-        rect->h = size.y;
-        return rect;
-    }
+    Vec2 pos = {0,0};
+    Vec2 size = {100,100};
+    bool is_static = false;
+
+    Entity() {}
 
     virtual void start(SDL_Renderer * renderer) {}
+    virtual void start() {}
     virtual void update(SDL_Renderer * renderer) {}
     virtual void update() {}
     virtual void destroy() {}
@@ -47,125 +47,118 @@ public:
 
 class Platform : public Entity {
 public: 
-    Platform(){ }
-
+    Platform(Vec2 pos){ 
+        this-> pos = pos;
+    }
+    
     void update(SDL_Renderer * renderer) override {
+        SDL_Rect srcrect = {pos.x, pos.y, size.x, size.y};
         SDL_SetRenderDrawColor(renderer,0,0,0,255);
-        SDL_RenderFillRect(renderer, getRect());
+        SDL_RenderFillRect(renderer, &srcrect);
     }
 };
 
-class BackgroudLeyer{
+class BackgroudLeyer : public Entity{
 private:
     SDL_Surface* image;
     SDL_Texture* texture;
 public:
-    BackgroudLeyer(SDL_Renderer *renderer, char *path) {
-        image = IMG_Load(path);
+    BackgroudLeyer(string path) {
+        image = IMG_Load(path.c_str());
+    }
+
+    void start(SDL_Renderer *renderer) override {
         texture = SDL_CreateTextureFromSurface(renderer, image);
     }
-    void render(SDL_Renderer *renderer) {
+
+    void update(SDL_Renderer *renderer) override {
         SDL_Rect srcrect = {0, 0, image->w, image->h};
         SDL_Rect dstrect = {0, 0, WINDOW_WIDTH, WINDOW_HIGHT};
         SDL_RenderCopy(renderer, texture, &srcrect, &dstrect);
     }
-    void destroy() {
+    void destroy() override {
         SDL_DestroyTexture(texture);
         SDL_FreeSurface(image);
     }
 };
 
-class Clouds {
+class Cloud : public Entity {
 private:
-    int cloud1_x, cloud1_y;
-    int cloud2_x, cloud2_y;
-    SDL_Surface* cloud1 = IMG_Load(CLOUD_ONE_IMAGE_PATH);
-    SDL_Surface* cloud2 = IMG_Load(CLOUD_TWO_IMAGE_PATH);
-    SDL_Texture* cloud1_texture;
-    SDL_Texture* cloud2_texture;
+    SDL_Surface* image;
+    SDL_Texture* texture;
 public:
-    Clouds(SDL_Renderer* renderer){
-        cloud1_texture = SDL_CreateTextureFromSurface(renderer, cloud1);
-        cloud2_texture = SDL_CreateTextureFromSurface(renderer, cloud2);
-        cloud1_x = rand() % WINDOW_WIDTH;
-        cloud2_x = rand() % WINDOW_WIDTH;
-        cloud1_y = rand() % 200;
-        cloud2_y = rand() % 200;
+    Cloud(string path) {
+        image = IMG_Load(path.c_str());
+        pos.x = rand() % WINDOW_WIDTH;
+        pos.y = rand() % 200;
     }
 
-    void render(SDL_Renderer* renderer) {
-        {
-            SDL_Rect srcrect = {0, 0, cloud1->w, cloud1->h};
-            SDL_Rect dstrect = {cloud1_x, cloud1_y, cloud1->w, cloud1->h};
-            SDL_RenderCopy(renderer, cloud1_texture, &srcrect, &dstrect);
+    void start(SDL_Renderer *renderer) override {
+        texture = SDL_CreateTextureFromSurface(renderer, image);
+    }
+
+    void update(SDL_Renderer* renderer) override {
+        SDL_Rect srcrect = {0, 0, image->w, image->h};
+        SDL_Rect dstrect = {pos.x, pos.y, image->w, image->h};
+        SDL_RenderCopy(renderer, texture, &srcrect, &dstrect);
+        pos.x -= 2;
+        if(pos.x < -image->w) {
+            pos.y = rand() % 200;
+            pos.x = image->w + WINDOW_WIDTH;
         }
-        {
-            SDL_Rect srcrect = {0, 0, cloud2->w, cloud2->h};
-            SDL_Rect dstrect = {cloud2_x, cloud2_y, cloud2->w, cloud2->h};
-            SDL_RenderCopy(renderer, cloud2_texture, &srcrect, &dstrect);
-        }
-        cloud1_x-=2;
-        cloud2_x-=2;
-        if(cloud1_x < -cloud1->w) {
-            cloud1_y = rand() % 200;
-            cloud1_x = cloud1->w + WINDOW_WIDTH;
-        }
-        if(cloud2_x < -cloud2->w) {
-            cloud2_y = rand() % 200;
-            cloud2_x = cloud2->w + WINDOW_WIDTH;
+    }
+
+    void destroy() override{
+        SDL_DestroyTexture(texture);
+        SDL_FreeSurface(image);
+    }
+};
+
+class Scene {
+    public:
+    SDL_Renderer* renderer;
+    Entity* objects[5] = {
+        new BackgroudLeyer(BACKGROUND_IMAGE_PATH),
+        new Cloud(CLOUD_ONE_IMAGE_PATH),
+        new Cloud(CLOUD_TWO_IMAGE_PATH),
+        new BackgroudLeyer(FORGROUND_IMAGE_PATH),
+        new Platform(Vec2{100,100}),
+    };
+
+    Scene(SDL_Renderer* renderer) {
+        this -> renderer = renderer;
+        objects[0]->start(renderer);
+        objects[1]->start(renderer);
+        objects[2]->start(renderer);
+        objects[3]->start(renderer);
+    }
+
+    void update(void) {
+        SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
+        SDL_RenderClear(renderer);
+        for(Entity* entity : objects) {
+            entity->update(renderer);
         }
     }
 
     void destroy() {
-        SDL_DestroyTexture(cloud1_texture);
-        SDL_DestroyTexture(cloud2_texture);
-        SDL_FreeSurface(cloud1);
-        SDL_FreeSurface(cloud2);
+        for(Entity* entity : objects) {
+            entity->destroy();
+        }
     }
 };
-
-class Background {
-    SDL_Renderer *renderer;
-    Clouds *clouds;
-    BackgroudLeyer* background;
-    BackgroudLeyer* forground;
-public:
-    Background(SDL_Renderer *renderer) {
-        this-> renderer = renderer;
-        clouds = new Clouds(renderer);
-        char bPath[] = BACKGROUND_IMAGE_PATH;
-        char fPath[] = FORGROUND_IMAGE_PATH;
-        background = new BackgroudLeyer(renderer,bPath);
-        forground  = new BackgroudLeyer(renderer,fPath);
-    }
-    void render() {
-        background->render(renderer);
-        clouds->render(renderer);
-        forground->render(renderer);
-    }
-    void destroy() {
-        forground->destroy();
-        clouds->destroy();
-        background->destroy();
-    }
-};
-
 
 LevelOneState GetLevelOneState(SDL_Renderer* renderer) {
-    Background* background = new Background(renderer);
-    return LevelOneState{renderer,background};
+    auto scene = new Scene(renderer);
+    auto state = LevelOneState{scene};
+    return state;
 }
 
 void UpdateLevelOne(LevelOneState state){
-    SDL_SetRenderDrawColor(state.renderer, 0, 0, 0, 255);
-    SDL_RenderClear(state.renderer);
-    state.background->render();
-    Entity* plat = new Platform();
-    plat->update(state.renderer);
+    state.scene->update();
 } 
 
 void DestroyLevelOne(LevelOneState state){
-    state.background->destroy();
+    state.scene->destroy();
 }
-
 

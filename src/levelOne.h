@@ -1,11 +1,10 @@
 #pragma once
 #include <SDL2/SDL.h>
 
-class Background;
+class Scene;
 
 typedef struct LevelOneState {
-    SDL_Renderer* renderer;
-    Background* background;
+    Scene* scene;
 } LevelOneState;
 
 LevelOneState GetLevelOneState(SDL_Renderer* renderer);
