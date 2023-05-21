@@ -1,5 +1,6 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
+#include <SDL2/SDL_rect.h>
 #include <SDL2/SDL_render.h>
 #include <complex>
 #include <cstring>
@@ -25,18 +26,27 @@ using namespace std;
 #endif
 
 typedef struct Vec2 {
-    int x;
-    int y;
+    float x;
+    float y;
 } Vec2;
 
 class Entity {
 public:
-    Vec2 pos = {0,0};
-    Vec2 size = {100,100};
-    bool is_static = false;
+    SDL_Point pos = {0,0};
+    SDL_Point size = {100,100};
+    bool is_static = true;
+    Scene* scene;
 
     Entity() {}
 
+    bool is_colliding(SDL_Rect src)
+    {
+        SDL_Rect hb{pos.x, pos.y, size.x, size.y};
+        if(!is_static) {
+            return (SDL_HasIntersection(&hb, &src)); 
+        }
+        return false;
+    }
     virtual void start(SDL_Renderer * renderer) {}
     virtual void start() {}
     virtual void update(SDL_Renderer * renderer) {}
@@ -45,10 +55,45 @@ public:
 };
 
 
+class Scene {
+    public:
+    SDL_Renderer* renderer;
+    vector<Entity *> objects;
+
+    Scene(SDL_Renderer* renderer) {
+        this -> renderer = renderer;
+    }
+
+    void start_objects(SDL_Renderer* renderer) {
+        objects[0]->start(renderer);
+        objects[1]->start(renderer);
+        objects[2]->start(renderer);
+        objects[3]->start(renderer);
+
+        objects[5]->scene = this;
+    }
+
+    void update(void) {
+        SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
+        SDL_RenderClear(renderer);
+        for(Entity* entity : objects) {
+            entity->update(renderer);
+        }
+    }
+
+    void destroy() {
+        for(Entity* entity : objects) {
+            entity->destroy();
+        }
+        objects.clear();
+    }
+};
+
 class Platform : public Entity {
 public: 
-    Platform(Vec2 pos){ 
+    Platform(SDL_Point pos){ 
         this-> pos = pos;
+        this->is_static = false;
     }
     
     void update(SDL_Renderer * renderer) override {
@@ -101,7 +146,7 @@ public:
         SDL_Rect srcrect = {0, 0, image->w, image->h};
         SDL_Rect dstrect = {pos.x, pos.y, image->w, image->h};
         SDL_RenderCopy(renderer, texture, &srcrect, &dstrect);
-        pos.x -= 2;
+        pos.x -= 1;
         if(pos.x < -image->w) {
             pos.y = rand() % 200;
             pos.x = image->w + WINDOW_WIDTH;
@@ -114,42 +159,105 @@ public:
     }
 };
 
-class Scene {
-    public:
-    SDL_Renderer* renderer;
-    Entity* objects[5] = {
-        new BackgroudLeyer(BACKGROUND_IMAGE_PATH),
-        new Cloud(CLOUD_ONE_IMAGE_PATH),
-        new Cloud(CLOUD_TWO_IMAGE_PATH),
-        new BackgroudLeyer(FORGROUND_IMAGE_PATH),
-        new Platform(Vec2{100,100}),
-    };
 
-    Scene(SDL_Renderer* renderer) {
-        this -> renderer = renderer;
-        objects[0]->start(renderer);
-        objects[1]->start(renderer);
-        objects[2]->start(renderer);
-        objects[3]->start(renderer);
+class Player: public Entity {
+public:
+    bool is_static = false;
+    float mass = 5;
+    float gravity = 10;
+    Vec2 force = {0,0};
+    Vec2 velocity = {0,0};
+    
+    Player(){
+        this->pos = {(WINDOW_WIDTH/2), (WINDOW_HIGHT/2)};
+        this->size = {40, 80};
     }
 
-    void update(void) {
-        SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
-        SDL_RenderClear(renderer);
-        for(Entity* entity : objects) {
-            entity->update(renderer);
+    SDL_Rect hitbox()
+    {
+        return SDL_Rect{pos.x, pos.y + 1, size.x, size.y};
+    }
+
+    SDL_Rect feetHitbox()
+    {
+        return SDL_Rect{pos.x, pos.y + size.y - 12, size.x, 12};
+    }
+
+    SDL_Rect headHitbox()
+    {
+        return SDL_Rect{pos.x, pos.y - 1, size.x, 12};
+    }
+
+    SDL_Rect leftHitbox()
+    {
+        return SDL_Rect{pos.x, pos.y, 12, size.y};
+    }
+
+    SDL_Rect rightHitbox()
+    {
+        return SDL_Rect{pos.x + size.x - 12, pos.y ,12 ,size.y};
+    }
+
+    /*
+     * 0 = no_collide , 1 = head , 2 = right
+     * 3 = feet , 4 = left
+     * */
+    int get_player_collition() {
+        
+        for (Entity* entity : scene->objects)
+        {
+            if (entity->is_colliding(feetHitbox()))
+            {   
+                return 3;
+            }
+            if (entity->is_colliding(leftHitbox()))
+            {
+                return 4;
+            }
+            if (entity->is_colliding(headHitbox()))
+            {
+                return 1;
+            }
+            if (entity->is_colliding(rightHitbox()))
+            {
+                return 2;
+            }
         }
+        return 0;
     }
 
-    void destroy() {
-        for(Entity* entity : objects) {
-            entity->destroy();
+    void calculate_velocity() {
+        int collition = get_player_collition();
+        if(collition == 3){
+            velocity.y = 0;
+            return;
         }
+        velocity.y = 1;
     }
+
+    void apply_velocity() {
+        pos.y += velocity.y * 1;
+    }
+
+    void update(SDL_Renderer * renderer) override {
+        calculate_velocity();
+        apply_velocity();
+        SDL_Rect srcrect = {(int) pos.x, (int) pos.y, (int)size.x, (int)size.y};
+        SDL_SetRenderDrawColor(renderer,255,0,0,255);
+        SDL_RenderFillRect(renderer, &srcrect);
+    }
+
 };
 
 LevelOneState GetLevelOneState(SDL_Renderer* renderer) {
     auto scene = new Scene(renderer);
+    scene->objects.push_back(new BackgroudLeyer(BACKGROUND_IMAGE_PATH));
+    scene->objects.push_back(new Cloud(CLOUD_ONE_IMAGE_PATH));
+    scene->objects.push_back(new Cloud(CLOUD_TWO_IMAGE_PATH));
+    scene->objects.push_back(new BackgroudLeyer(FORGROUND_IMAGE_PATH));
+    scene->objects.push_back(new Platform(SDL_Point{WINDOW_WIDTH/2-20,WINDOW_HIGHT/2+150}));
+    scene->objects.push_back(new Player());
+    scene->start_objects(renderer);
     auto state = LevelOneState{scene};
     return state;
 }

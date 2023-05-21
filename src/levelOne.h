@@ -2,7 +2,6 @@
 #include <SDL2/SDL.h>
 
 class Scene;
-
 typedef struct LevelOneState {
     Scene* scene;
 } LevelOneState;

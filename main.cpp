@@ -17,7 +17,7 @@ int main(int argc, char *argv[])
     IMG_Init(IMG_INIT_PNG);
     TTF_Init();
     SDL_Window *window = SDL_CreateWindow("Brahlers", 30, 30, WINDOW_WIDTH, WINDOW_HIGHT, SDL_WINDOW_SHOWN);
-    SDL_Renderer *renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
+    SDL_Renderer *renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_PRESENTVSYNC | SDL_RENDERER_ACCELERATED);
 
     auto testLevel = GetTestStateLevel(renderer);
     auto levelOneState = GetLevelOneState(renderer);
@@ -53,7 +53,6 @@ int main(int argc, char *argv[])
         }
         
         SDL_RenderPresent(renderer);
-        sleep_ms(20);
     }
     DestroyTestLevel(testLevel);
     DestroyLevelOne(levelOneState);
