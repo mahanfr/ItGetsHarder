@@ -2,6 +2,7 @@
 #include <SDL2/SDL_image.h>
 #include <SDL2/SDL_rect.h>
 #include <SDL2/SDL_render.h>
+#include <SDL2/SDL_timer.h>
 #include <complex>
 #include <cstring>
 #include <iostream>
@@ -167,9 +168,11 @@ public:
     float gravity = 10;
     Vec2 force = {0,0};
     Vec2 velocity = {0,0};
-    
+    Uint32 lastUpdate = 0;
+    float fallingTime = 0;
+
     Player(){
-        this->pos = {(WINDOW_WIDTH/2), (WINDOW_HIGHT/2)};
+        this->pos = {(WINDOW_WIDTH/2), 0};
         this->size = {40, 80};
     }
 
@@ -226,17 +229,37 @@ public:
         return 0;
     }
 
+    void move(float x = 0,float y = 0) {
+        for(int i = (int) y; i > 0; --i){
+            calculate_velocity();
+            pos.y += 1;
+        }
+        for(int i = (int) x; i > 0; --i){
+            calculate_velocity();
+            pos.x += 1;
+        }
+    }
+
     void calculate_velocity() {
         int collition = get_player_collition();
         if(collition == 3){
             velocity.y = 0;
             return;
         }
-        velocity.y = 1;
+        velocity.y = mass * gravity;
     }
 
     void apply_velocity() {
-        pos.y += velocity.y * 1;
+        auto current = SDL_GetTicks();
+        fallingTime += (current - lastUpdate) / 1000.f;
+        float dt = (current - lastUpdate) / 1000.f;
+        // Cap Timer to never be more than 1 sec
+        if (current - lastUpdate > 1000){
+            dt = 0.1;
+            fallingTime = 1;
+        }
+        move(0,velocity.y * fallingTime * dt * 2.4f);
+        lastUpdate = current;
     }
 
     void update(SDL_Renderer * renderer) override {
