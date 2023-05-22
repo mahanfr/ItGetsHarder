@@ -36,7 +36,7 @@ int main(int argc, char *argv[])
                 break;
             }
 
-            if (SDL_KEYDOWN == ev.type){
+            if (SDL_KEYDOWN == ev.type) {
                 if(SDL_SCANCODE_0 == ev.key.keysym.scancode)
                     levelNumber = 0;
                 else if (SDL_SCANCODE_1 == ev.key.keysym.scancode)

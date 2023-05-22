@@ -163,6 +163,7 @@ public:
 
 class Player: public Entity {
 public:
+    bool start = true;
     bool is_static = false;
     float mass = 5;
     float gravity = 10;
@@ -183,7 +184,7 @@ public:
 
     SDL_Rect feetHitbox()
     {
-        return SDL_Rect{pos.x, pos.y + size.y - 12, size.x, 12};
+        return SDL_Rect{pos.x, pos.y + size.y - 11, size.x, 12};
     }
 
     SDL_Rect headHitbox()
@@ -209,32 +210,23 @@ public:
         
         for (Entity* entity : scene->objects)
         {
-            if (entity->is_colliding(feetHitbox()))
-            {   
-                return 3;
-            }
-            if (entity->is_colliding(leftHitbox()))
-            {
-                return 4;
-            }
-            if (entity->is_colliding(headHitbox()))
-            {
-                return 1;
-            }
-            if (entity->is_colliding(rightHitbox()))
-            {
-                return 2;
-            }
+            if (entity->is_colliding(feetHitbox())) return 3;
+            if (entity->is_colliding(leftHitbox())) return 4;
+            if (entity->is_colliding(headHitbox())) return 1;
+            if (entity->is_colliding(rightHitbox())) return 2;
         }
         return 0;
     }
 
     void move(float x = 0,float y = 0) {
         for(int i = (int) y; i > 0; --i){
-            calculate_velocity();
+            int collition = get_player_collition();
+            if(collition == 3) break;
             pos.y += 1;
         }
         for(int i = (int) x; i > 0; --i){
+            int collition = get_player_collition();
+            if(collition == 3) break;
             calculate_velocity();
             pos.x += 1;
         }
@@ -254,11 +246,12 @@ public:
         fallingTime += (current - lastUpdate) / 1000.f;
         float dt = (current - lastUpdate) / 1000.f;
         // Cap Timer to never be more than 1 sec
-        if (current - lastUpdate > 1000){
+        if (start){
             dt = 0.1;
-            fallingTime = 1;
+            fallingTime = 0;
+            start = false;
         }
-        move(0,velocity.y * fallingTime * dt * 2.4f);
+        move(0,velocity.y * fallingTime * dt * 99.4f);
         lastUpdate = current;
     }
 
