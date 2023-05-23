@@ -94,6 +94,7 @@ class Platform : public Entity {
 public: 
     Platform(SDL_Point pos){ 
         this-> pos = pos;
+        this->size = {WINDOW_WIDTH, 80};
         this->is_static = false;
     }
     
@@ -210,10 +211,22 @@ public:
         
         for (Entity* entity : scene->objects)
         {
-            if (entity->is_colliding(feetHitbox())) return 3;
-            if (entity->is_colliding(leftHitbox())) return 4;
-            if (entity->is_colliding(headHitbox())) return 1;
-            if (entity->is_colliding(rightHitbox())) return 2;
+            if (entity->is_colliding(feetHitbox()))
+            {   
+                return 3;
+            }
+            if (entity->is_colliding(leftHitbox()))
+            {
+                return 4;
+            }
+            if (entity->is_colliding(headHitbox()))
+            {
+                return 1;
+            }
+            if (entity->is_colliding(rightHitbox()))
+            {
+                return 2;
+            }
         }
         return 0;
     }
@@ -221,12 +234,14 @@ public:
     void move(float x = 0,float y = 0) {
         for(int i = (int) y; i > 0; --i){
             int collition = get_player_collition();
-            if(collition == 3) break;
+            if(collition == 3)
+                break;
             pos.y += 1;
         }
         for(int i = (int) x; i > 0; --i){
             int collition = get_player_collition();
-            if(collition == 3) break;
+            if(collition == 3)
+                break;
             calculate_velocity();
             pos.x += 1;
         }
@@ -251,7 +266,7 @@ public:
             fallingTime = 0;
             start = false;
         }
-        move(0,velocity.y * fallingTime * dt * 99.4f);
+        move(0,velocity.y * fallingTime * dt * 2.4f);
         lastUpdate = current;
     }
 
@@ -271,7 +286,7 @@ LevelOneState GetLevelOneState(SDL_Renderer* renderer) {
     scene->objects.push_back(new Cloud(CLOUD_ONE_IMAGE_PATH));
     scene->objects.push_back(new Cloud(CLOUD_TWO_IMAGE_PATH));
     scene->objects.push_back(new BackgroudLeyer(FORGROUND_IMAGE_PATH));
-    scene->objects.push_back(new Platform(SDL_Point{WINDOW_WIDTH/2-20,WINDOW_HIGHT/2+150}));
+    scene->objects.push_back(new Platform(SDL_Point{0,WINDOW_HIGHT/2+150}));
     scene->objects.push_back(new Player());
     scene->start_objects(renderer);
     auto state = LevelOneState{scene};
