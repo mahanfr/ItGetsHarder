@@ -19,11 +19,11 @@ int main(int argc, char *argv[])
     SDL_Window *window = SDL_CreateWindow("Brahlers", 30, 30, WINDOW_WIDTH, WINDOW_HIGHT, SDL_WINDOW_SHOWN);
     SDL_Renderer *renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_PRESENTVSYNC | SDL_RENDERER_ACCELERATED);
 
-    auto testLevel = GetTestStateLevel(renderer);
+    //auto testLevel = GetTestStateLevel(renderer);
     auto levelOneState = GetLevelOneState(renderer);
 
     bool running = true;
-    int levelNumber = 0;
+    int levelNumber = 1;
     while (running)
     {
         SDL_Event ev;
@@ -47,14 +47,14 @@ int main(int argc, char *argv[])
         // THIS IS ONLY FOR DEBUGING
         // we should load a scene and destroy other scens so we dont load the whole game in ram
         switch (levelNumber) {
-            case 0: UpdateTestLevel(testLevel); break;
+            //case 0: UpdateTestLevel(testLevel); break;
             case 1: UpdateLevelOne(levelOneState); break;
-            default: UpdateTestLevel(testLevel); break;
+            //default: UpdateTestLevel(testLevel); break;
         }
         
         SDL_RenderPresent(renderer);
     }
-    DestroyTestLevel(testLevel);
+    //DestroyTestLevel(testLevel);
     DestroyLevelOne(levelOneState);
 
     SDL_DestroyRenderer(renderer);
