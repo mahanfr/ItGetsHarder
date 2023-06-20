@@ -1,13 +1,14 @@
 #pragma once
 #include <SDL2/SDL.h>
+#include "Engine.h"
 
-class Scene;
-typedef struct LevelOneState {
-    Scene* scene;
-} LevelOneState;
+class Scene1 : public Scene {
+    public:
+    Scene1(SDL_Renderer *renderer): Scene(renderer) {} 
 
-LevelOneState GetLevelOneState(SDL_Renderer* renderer);
+    void start(SDL_Renderer* renderer);
 
-void UpdateLevelOne(LevelOneState state);
+    void update(void);
 
-void DestroyLevelOne(LevelOneState state);
+    void destroy();
+};

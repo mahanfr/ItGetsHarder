@@ -1,5 +1,8 @@
 #include <SDL2/SDL.h>
+#include <SDL2/SDL_events.h>
 #include <SDL2/SDL_image.h>
+#include <SDL2/SDL_keycode.h>
+#include <SDL2/SDL_scancode.h>
 #include <SDL2/SDL_ttf.h>
 #include "src/platformer.h"
 #include "src/levelOne.h"
@@ -20,9 +23,12 @@ int main(int argc, char *argv[])
     SDL_Renderer *renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_PRESENTVSYNC | SDL_RENDERER_ACCELERATED);
 
     //auto testLevel = GetTestStateLevel(renderer);
-    auto levelOneState = GetLevelOneState(renderer);
+    //auto levelOneState = GetLevelOneState(renderer);
+    auto levelOne_Scene = new Scene1(renderer);
+    levelOne_Scene->start(renderer);
 
     bool running = true;
+    bool editMode = false;
     int levelNumber = 1;
     while (running)
     {
@@ -41,21 +47,27 @@ int main(int argc, char *argv[])
                     levelNumber = 0;
                 else if (SDL_SCANCODE_1 == ev.key.keysym.scancode)
                     levelNumber = 1;
+                
+                // EDIT MODE
+                if(SDL_SCANCODE_F1 == ev.key.keysym.scancode) {
+                    editMode = !editMode;
+                }
             }
         }
 
         // THIS IS ONLY FOR DEBUGING
         // we should load a scene and destroy other scens so we dont load the whole game in ram
-        switch (levelNumber) {
-            //case 0: UpdateTestLevel(testLevel); break;
-            case 1: UpdateLevelOne(levelOneState); break;
-            //default: UpdateTestLevel(testLevel); break;
+        if (!editMode) {
+            switch (levelNumber) {
+                //case 0: UpdateTestLevel(testLevel); break;
+                case 1: levelOne_Scene->update(); 
+                //default: UpdateTestLevel(testLevel); break;
+            }
         }
-        
         SDL_RenderPresent(renderer);
     }
     //DestroyTestLevel(testLevel);
-    DestroyLevelOne(levelOneState);
+    levelOne_Scene->destroy();
 
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);

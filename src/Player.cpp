@@ -61,9 +61,9 @@ SDL_Rect Player::rightHitbox()
 int Player::get_player_collition() {
     for (Entity* entity : scene->objects)
     {
-        if (entity->is_colliding(feetHitbox())) {return 3;}
-        if (entity->is_colliding(leftHitbox())) {return 4;}
-        if (entity->is_colliding(headHitbox())) {return 1;}
+        if (entity->is_colliding(feetHitbox()))  {return 3;}
+        if (entity->is_colliding(leftHitbox()))  {return 4;}
+        if (entity->is_colliding(headHitbox()))  {return 1;}
         if (entity->is_colliding(rightHitbox())) {return 2;}
     }
     return 0;
@@ -90,7 +90,7 @@ void Player::move(float x, float y)
             is_grounded = false;
         }
         if(!(is_grounded && y > 0))
-            this->pos.y += y * speed ;
+            this->pos.y += y * speed * 1.2;
     }
 }
 
@@ -201,8 +201,7 @@ void Player::update(SDL_Renderer *renderer)
     }
 }
 
-void Player::destroy()
-{
+void Player::destroy() {
     SDL_DestroyTexture(texture);
     SDL_FreeSurface(image);
     Mix_FreeChunk(jumpingSound);

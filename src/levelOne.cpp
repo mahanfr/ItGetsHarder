@@ -33,34 +33,6 @@ typedef struct Vec2 {
     float y;
 } Vec2;
 
-class Scene1 : public Scene {
-    public:
-    Scene1(SDL_Renderer *renderer): Scene(renderer) {} 
-
-    void start(SDL_Renderer* renderer) {
-        objects[0]->start(renderer);
-        objects[1]->start(renderer);
-        objects[2]->start(renderer);
-        objects[3]->start(renderer);
-
-        objects[5]->scene = this;
-    }
-
-    void update(void) {
-        SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
-        SDL_RenderClear(renderer);
-        for(Entity* entity : objects) {
-            entity->update(renderer);
-        }
-    }
-
-    void destroy() {
-        for(Entity* entity : objects) {
-            entity->destroy();
-        }
-        objects.clear();
-    }
-};
 
 class Platform : public Entity {
 public: 
@@ -133,129 +105,32 @@ public:
     }
 };
 
+void Scene1::start(SDL_Renderer* renderer) {
+    objects.push_back(new BackgroudLeyer(BACKGROUND_IMAGE_PATH));
+    objects.push_back(new Cloud(CLOUD_ONE_IMAGE_PATH));
+    objects.push_back(new Cloud(CLOUD_TWO_IMAGE_PATH));
+    objects.push_back(new BackgroudLeyer(FORGROUND_IMAGE_PATH));
+    objects.push_back(new Platform(SDL_Point{0,WINDOW_HIGHT/2+150}));
+    objects.push_back(new Player(renderer));
+    objects[0]->start(renderer);
+    objects[1]->start(renderer);
+    objects[2]->start(renderer);
+    objects[3]->start(renderer);
 
-// class Player: public Entity {
-// public:
-//     bool start = true;
-//     bool is_static = false;
-//     float mass = 5;
-//     float gravity = 50;
-//     Vec2 force = {0,0};
-//     Vec2 velocity = {0,0};
-//     Uint32 lastUpdate = 0;
-//     float fallingTime = 0;
-// 
-//     Player(){
-//         this->pos = {(WINDOW_WIDTH/2), 0};
-//         this->size = {40, 80};
-//     }
-// 
-//     SDL_Rect hitbox()
-//     {
-//         return SDL_Rect{pos.x, pos.y + 1, size.x, size.y};
-//     }
-// 
-//     SDL_Rect feetHitbox()
-//     {
-//         return SDL_Rect{pos.x, pos.y + size.y - 11, size.x, 12};
-//     }
-// 
-//     SDL_Rect headHitbox()
-//     {
-//         return SDL_Rect{pos.x, pos.y - 1, size.x, 12};
-//     }
-// 
-//     SDL_Rect leftHitbox()
-//     {
-//         return SDL_Rect{pos.x, pos.y, 12, size.y};
-//     }
-// 
-//     SDL_Rect rightHitbox()
-//     {
-//         return SDL_Rect{pos.x + size.x - 12, pos.y ,12 ,size.y};
-//     }
-// 
-//     /*
-//      * 0 = no_collide , 1 = head , 2 = right
-//      * 3 = feet , 4 = left
-//      * */
-//     int get_player_collition() {
-//         
-//         for (Entity* entity : scene->objects)
-//         {
-//             if (entity->is_colliding(feetHitbox())) {return 3;}
-//             if (entity->is_colliding(leftHitbox())) {return 4;}
-//             if (entity->is_colliding(headHitbox())) {return 1;}
-//             if (entity->is_colliding(rightHitbox())) {return 2;}
-//         }
-//         return 0;
-//     }
-// 
-//     void move(float x = 0,float y = 0) {
-//         for(int i = (int) y; i > 0; --i){
-//             int collition = get_player_collition();
-//             if(collition == 3) break;
-//             pos.y += 1;
-//         }
-//         for(int i = (int) x; i > 0; --i){
-//             int collition = get_player_collition();
-//             if(collition == 3) break;
-//             calculate_velocity();
-//             pos.x += 1;
-//         }
-//     }
-// 
-//     void calculate_velocity() {
-//         int collition = get_player_collition();
-//         if(collition == 3){
-//             velocity.y = 0;
-//             return;
-//         }
-//         velocity.y = mass * gravity;
-//     }
-// 
-//     void apply_velocity() {
-//         auto current = SDL_GetTicks();
-//         fallingTime += (current - lastUpdate) / 1000.f;
-//         float dt = (current - lastUpdate) / 1000.f;
-//         // Cap Timer to never be more than 1 sec
-//         if (start){
-//             dt = 0.1;
-//             fallingTime = 0;
-//             start = false;
-//         }
-//         move(0,velocity.y * fallingTime * dt * 2.4f);
-//         lastUpdate = current;
-//     }
-// 
-//     void update(SDL_Renderer * renderer) override {
-//         calculate_velocity();
-//         apply_velocity();
-//         SDL_Rect srcrect = {(int) pos.x, (int) pos.y, (int)size.x, (int)size.y};
-//         SDL_SetRenderDrawColor(renderer,255,0,0,255);
-//         SDL_RenderFillRect(renderer, &srcrect);
-//     }
-// 
-// };
-
-LevelOneState GetLevelOneState(SDL_Renderer* renderer) {
-    auto scene = new Scene1(renderer);
-    scene->objects.push_back(new BackgroudLeyer(BACKGROUND_IMAGE_PATH));
-    scene->objects.push_back(new Cloud(CLOUD_ONE_IMAGE_PATH));
-    scene->objects.push_back(new Cloud(CLOUD_TWO_IMAGE_PATH));
-    scene->objects.push_back(new BackgroudLeyer(FORGROUND_IMAGE_PATH));
-    scene->objects.push_back(new Platform(SDL_Point{0,WINDOW_HIGHT/2+150}));
-    scene->objects.push_back(new Player(renderer));
-    scene->start(renderer);
-    auto state = LevelOneState{scene};
-    return state;
+    objects[5]->scene = this;
 }
 
-void UpdateLevelOne(LevelOneState state){
-    state.scene->update();
-} 
-
-void DestroyLevelOne(LevelOneState state){
-    state.scene->destroy();
+void Scene1::update(void) {
+    SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
+    SDL_RenderClear(renderer);
+    for(Entity* entity : objects) {
+        entity->update(renderer);
+    }
 }
 
+void Scene1::destroy() {
+    for(Entity* entity : objects) {
+        entity->destroy();
+    }
+    objects.clear();
+}
