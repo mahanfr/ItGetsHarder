@@ -79,18 +79,18 @@ void Player::move(float x, float y)
     for(int i=0; i < (int) abs(x); i++){
         int collition = get_player_collition();
         // if(collition == 3) break;
-        this->pos.x += x;
+        this->pos.x += x * speed ;
     }
 
     for(int i=0; i < (int) abs(y); i++){
         int collition = get_player_collition();
         if(collition == 3){
             is_grounded = true;
-            break;
         }else {
             is_grounded = false;
         }
-        this->pos.y += y;
+        if(!(is_grounded && y > 0))
+            this->pos.y += y * speed ;
     }
 }
 
@@ -101,8 +101,6 @@ void Player::playJumpSound()
 
 void Player::update(SDL_Renderer *renderer)
 {
-    if(!is_grounded)
-        move(0, 1);
     Uint32 ticks = SDL_GetTicks();
     const Uint8 *keystates = SDL_GetKeyboardState(NULL);
     if (keystates[SDL_SCANCODE_LEFT] || keystates[SDL_SCANCODE_A])
@@ -120,6 +118,7 @@ void Player::update(SDL_Renderer *renderer)
 
     if ((keystates[SDL_SCANCODE_UP] || keystates[SDL_SCANCODE_W] || keystates[SDL_SCANCODE_SPACE]) && !is_jumping && is_grounded)
     {
+        is_grounded = false;
         is_jumping = true;
     }
 
@@ -152,10 +151,10 @@ void Player::update(SDL_Renderer *renderer)
     {
         if (playerDistFromGround == 1)
             playJumpSound();
-
+         
         if (playerDistFromGround <= jumpHight)
         {
-            move(0,-5);
+            move(0,-1);
             playerDistFromGround++;
             int sp_pos = 17;
             SDL_Rect srcrect = {sp_pos, 48, 14, 16};
@@ -175,6 +174,7 @@ void Player::update(SDL_Renderer *renderer)
         }
         else
         {
+            move(0, 1);
             int sp_pos = 35;
             SDL_Rect srcrect = {sp_pos, 48, 14, 16};
             SDL_Rect dstrect = {pos.x, pos.y, 56, 64};
