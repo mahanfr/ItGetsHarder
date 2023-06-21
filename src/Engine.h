@@ -1,5 +1,7 @@
 #pragma once
 #include <SDL2/SDL.h>
+#include <cstdlib>
+#include <string>
 #include <vector>
 #ifndef _INCLUDE_ENGINE_H
 #define _INCLUDE_ENGINE_H
@@ -11,6 +13,8 @@ public:
     SDL_Point pos = {0,0};
     SDL_Point size = {100,100};
     bool is_static = true;
+    long eid = rand();
+    std::string tag = "";
     Scene* scene;
 
     Entity() {}
@@ -44,6 +48,22 @@ class Scene {
     virtual void update(void){}
 
     virtual void destroy() {} 
+};
+
+class Editor {
+public:
+    SDL_Renderer* renderer;
+    Scene *scene = nullptr;
+    bool drag = false;
+    long drag_eid;
+    SDL_Point drag_offset = {0,0};
+
+    Editor(SDL_Renderer* renderer);
+    Editor(Scene* scene);
+    bool is_mouseOnEntity(int mouse_x, int mouse_y, Entity *entity);
+    void setScene(Scene* scene);
+    void drawWireFrame(Entity* entity);
+    void update();
 };
 
 #endif

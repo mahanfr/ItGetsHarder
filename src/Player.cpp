@@ -27,6 +27,8 @@ Player::Player(SDL_Renderer *renderer)
 {
     size.x = 56;
     size.y = 64;
+    is_static = false;
+    tag = "player";
     char sprite[] = SPRITE_PATH;
     image = IMG_Load(sprite);
     texture = SDL_CreateTextureFromSurface(renderer, image);
@@ -61,6 +63,7 @@ SDL_Rect Player::rightHitbox()
 int Player::get_player_collition() {
     for (Entity* entity : scene->objects)
     {
+        if (entity->tag == "player") {return 0;}
         if (entity->is_colliding(feetHitbox()))  {return 3;}
         if (entity->is_colliding(leftHitbox()))  {return 4;}
         if (entity->is_colliding(headHitbox()))  {return 1;}

@@ -4,6 +4,7 @@
 #include <SDL2/SDL_keycode.h>
 #include <SDL2/SDL_scancode.h>
 #include <SDL2/SDL_ttf.h>
+#include "src/Engine.h"
 #include "src/platformer.h"
 #include "src/levelOne.h"
 #include "src/utils.h"
@@ -26,6 +27,7 @@ int main(int argc, char *argv[])
     //auto levelOneState = GetLevelOneState(renderer);
     auto levelOne_Scene = new Scene1(renderer);
     levelOne_Scene->start(renderer);
+    auto editor = new Editor(levelOne_Scene);
 
     bool running = true;
     bool editMode = false;
@@ -63,6 +65,8 @@ int main(int argc, char *argv[])
                 case 1: levelOne_Scene->update(); 
                 //default: UpdateTestLevel(testLevel); break;
             }
+        }else {
+            editor->update();
         }
         SDL_RenderPresent(renderer);
     }
