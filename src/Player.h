@@ -6,8 +6,27 @@
 #include <string>
 #include "Engine.h"
 
+#ifdef _WIN32
+#define MUS_PATH ".././assets/jump.wav"
+#define SPRITE_PATH ".././assets/Old-hero-red.png";
+#define FONT_PATH ".././assets/Oleaguid.ttf"
+#else
+#define MUS_PATH "./assets/jump.wav"
+#define SPRITE_PATH "./assets/Old-hero.png"
+#define FONT_PATH "./assets/Oleaguid.ttf"
+#endif
+
 #ifndef INCLUDE_PLAYER_H
 #define INCLUDE_PLAYER_H
+
+enum Player_Collition_Dir {
+    PLAYER_COL_NONE = 0,
+    PLAYER_COL_FEET = 1,
+    PLAYER_COL_LEFT = 2,
+    PLAYER_COL_RIGHT = 4,
+    PLAYER_COL_HEAD = 8,
+};
+
 class Player: public Entity
 {
 private:
@@ -17,10 +36,6 @@ private:
     bool is_grounded = false;
     int playerDistFromGround = 0;
     bool is_jumping = false;
-    bool is_punching = false;
-    bool punching_cooldown = 0;
-    Uint32 punching_duration = 0;
-    int punch_afp = 0;
     int speed = 4;
 
 public:

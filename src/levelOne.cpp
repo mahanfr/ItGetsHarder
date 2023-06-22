@@ -33,7 +33,6 @@ typedef struct Vec2 {
     float y;
 } Vec2;
 
-
 class Platform : public Entity {
 public: 
     Platform(SDL_Point pos){ 
@@ -106,18 +105,17 @@ public:
 };
 
 void Scene1::start(SDL_Renderer* renderer) {
-    objects.push_back(new BackgroudLeyer(BACKGROUND_IMAGE_PATH));
-    objects.push_back(new Cloud(CLOUD_ONE_IMAGE_PATH));
-    objects.push_back(new Cloud(CLOUD_TWO_IMAGE_PATH));
-    objects.push_back(new BackgroudLeyer(FORGROUND_IMAGE_PATH));
-    objects.push_back(new Platform(SDL_Point{0,WINDOW_HIGHT/2+150}));
-    objects.push_back(new Player(renderer));
-    objects[0]->start(renderer);
-    objects[1]->start(renderer);
-    objects[2]->start(renderer);
-    objects[3]->start(renderer);
-
-    objects[5]->scene = this;
+    if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048) < 0)
+    {
+        printf("SDL_mixer could not initialize! SDL_mixer Error: %s\n", Mix_GetError());
+    }
+    addObject(new BackgroudLeyer(BACKGROUND_IMAGE_PATH));
+    addObject(new Cloud(CLOUD_ONE_IMAGE_PATH));
+    addObject(new Cloud(CLOUD_TWO_IMAGE_PATH));
+    addObject(new BackgroudLeyer(FORGROUND_IMAGE_PATH));
+    addObject(new Platform(SDL_Point{0,WINDOW_HIGHT/2+150}));
+    addObject(new Platform(SDL_Point{0,150}));
+    addObject(new Player(renderer),this);
 }
 
 void Scene1::update(void) {

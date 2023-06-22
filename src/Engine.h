@@ -16,6 +16,7 @@ public:
     long eid = rand();
     std::string tag = "";
     Scene* scene;
+    bool editMode = false;
 
     Entity() {}
 
@@ -45,6 +46,16 @@ class Scene {
     
     virtual void start() {}
 
+    virtual void addObject(Entity *ent) {
+        objects.push_back(ent);
+        ent->start(renderer);
+    }
+
+    virtual void addObject(Entity *ent, Scene *scn) {
+        objects.push_back(ent);
+        ent->scene = scn;
+    }
+    
     virtual void update(void){}
 
     virtual void destroy() {} 

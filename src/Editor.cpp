@@ -43,12 +43,14 @@ void Editor::update() {
         if(!entity->is_static) {
             if(state != 1) {
                 drag = false;
+                entity->editMode = false;
             }
             if (!drag && is_mouseOnEntity(mouse_x, mouse_y, entity)) {
                 if(state == 1){
                     drag = true;
                     drag_eid = entity->eid;
                     drag_offset = {(entity->pos.x - mouse_x), (entity->pos.y - mouse_y)};
+                    entity->editMode = true;
                 }
             }
 
